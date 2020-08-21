@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <link rel="shortcut icon" href="https://cn.vuejs.org/images/logo.png" />
+        <title>example</title>
+        <style>
+            table, td, th {
+                width: 50%;
+                text-align: center;
+            }
+            table {
+                border: 3px solid rgb(170, 255, 188);
+            }
+            th {
+                background-color: #afe;
+            }
+        </style>
+        <script src="https://unpkg.com/vue"></script>
+        <script type="text/x-template" id="template">
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th v-for="(item, index) in list" :key="index" @click="$emit('sort', item)">
+                                <span v-if="$root.sortBy === item">{{ $root.reverse ? '\u21e1' : '\u21e3' }}</span>{{ item }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in data" :key="index">
+                            <td v-for="(item2, index2) in list" :key="index2">{{ item[list[index2]] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </script>
+    </head>
+    <body>
+        <div id="demo">
+            <input type="text" v-model="value"/>
+            <custom-table :data="filtedData" :list="tableList" @sort="sort"/>
+        </div>
+        <script>
+            let tableData = [
+                {
+                    name: 'kingbsos',
+                    power: 8000
+                },
+                {
+                    name: 'kingbsos2',
+                    power: 1000
+                },
+                {
+                    name: 'kingbsos3',
+                    power: 3000
+                }
+            ];
+            Vue.component('custom-table', {
+                template: '#template',
+                props: {
+                    data: Array,
+                    list: Array
+                }
+            });
+            const vm = new Vue({
+                el: '#demo',
+                data: {
+                    value: '',
+                    tableData: tableData,
+                    tableList: ['name', 'power'],
+                    sortBy: '',
+                    reverse: false
+                },
+                computed: {
+                    _sortedData() {
+                        if(this.sortBy) {
+                            let arr =  [...this.tableData].sort((a, b) => {
+                                if(a[this.sortBy] < b[this.sortBy]) return -1;
+                                else return 1;
+                            });
+                            return arr;
+                        } else {
+                            return this.tableData;
+                        }
+                    },
+                    sortedData() {
+                        if(this.reverse) {
+                            return [...this._sortedData].reverse();
+                        } else {
+                            return this._sortedData;
+                        }
+                    },
+                    filtedData() {
+                        if(this.value)
+                        return this.sortedData.filter((item) => {
+                            return `${item.name}${item.power}`.match(RegExp(this.value, 'g')) !== null;
+                        });
+                        else return this.sortedData;
+                    }
+                },
+                methods: {
+                    sort(v) {
+                        if(this.sortBy === v) {
+                            this.reverse = !this.reverse;
+                        } else {
+                            this.sortBy = v;
+                            this.reverse = false;
+                        }
+                    }
+                },
+                mounted() {
+                    this.sortBy = this.tableList[0];
+                }
+            });
+        </script>
+    </body>
+</html>
